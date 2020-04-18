@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+exvm_export_path() {
+	export EXVM_PATH_BACKUP="$PATH"
+	export PATH="$EXVM_ROOT/bin:$PATH"
+	export EXVM_ROOT
+	export EXVM_ROOT_BACKUP
+}

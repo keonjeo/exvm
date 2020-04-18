@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+if [ -z "$EXVM_ROOT" ]; then
+    exvm_error 'ERROR: EXVM_ROOT is not set! Please add the following line to your .bashrc or .profile
+
+    [[ -s "$HOME/.exvm/scripts/exvm" ]] && source "$HOME/.exvm/scripts/exvm"
+    '
+fi
+
+. "$EXVM_ROOT/scripts/load_functions" || exit 1
+
+command=$1
+
+# Check the prerequisites for the exvm installation
+"$EXVM_ROOT/scripts/exvm_check"
+
+if [[ "$?" != "0" ]]; then
+	exvm_fatal "Missing requirements."
+fi
+
+if [[ $command == "version" ]]; then
+	exvm_message "Elixir Version Manager v$EXVM_VERSION installed at $EXVM_ROOT"
+else
+	if [ -f "$EXVM_ROOT/scripts/$command" ]; then
+		shift
+		"$EXVM_ROOT/scripts/$command" "$@"
+	elif [[ -z $command || $command = help ]]; then
+		exvm_echo "Usage: exvm [command]
+
+Description:
+  EXVM is the Elixir Version Manager.
+
+Commands:
+  version    - print the exvm version number
+  help       - display this usage text
+  listall    - list available versions
+  install    - install elixir version
+  uninstall  - uninstall elixir version
+  list       - list installed elixir versions
+  use        - select a elixir version to use (--default to set permanently)
+  implode    - completely remove exvm
+"
+	else
+		exvm_error "Unrecognized command line argument: '$command'"
+	fi
+fi

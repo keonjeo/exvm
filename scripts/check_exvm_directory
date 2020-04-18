@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+exvm() {
+    exvm_dev_info "check exvm directory if exists on the system."
+	if [[ ! -d $EXVM_ROOT ]]; then
+		echo ""
+		exvm_error "EXVM_ROOT: $EXVM_ROOT does not exist, please reinstall EXVM!"
+		echo ""
+		echo ""
+		exvm_message " If you are using bash on your terminal, you could execute the following command on your terminal. "
+		exvm_message "+--------------------------------------------------------------------------------------------------------------+"
+		exvm_message "|                                                                                                              |"
+		exvm_message "|   bash < <(curl -s -S -L https://raw.githubusercontent.com/keonjeo/exvm/master/binscripts/exvm-installer)    |"
+		exvm_message "|                                                                                                              |"
+		exvm_message "+--------------------------------------------------------------------------------------------------------------+"
+		echo ""
+		echo ""
+		echo ""
+		exvm_message " If you are using zsh on your terminal, you could execute the following command on your terminal.  "
+		exvm_message "+--------------------------------------------------------------------------------------------------------------+"
+		exvm_message "|                                                                                                              |"
+		exvm_message "|   zsh  < <(curl -s -S -L https://raw.githubusercontent.com/keonjeo/exvm/master/binscripts/exvm-installer)    |"
+		exvm_message "|                                                                                                              |"
+		exvm_message "+--------------------------------------------------------------------------------------------------------------+"
+		echo ""
+	fi
+}

@@ -1,0 +1,7 @@
+[[ ! -d $EXVM_ROOT/logs ]] && mkdir -p $EXVM_ROOT/logs > /dev/null 2>&1
+
+export EXVM_VERSION=$(cat "$EXVM_ROOT/VERSION")
+export PATH="$PATH:$EXVM_ROOT/bin"
+export EXVM_PATH_BACKUP="$PATH"
+#[ -f "$EXVM_ROOT/environments/default" ] && . "$EXVM_ROOT/environments/default"
+. "$EXVM_ROOT/scripts/env/exvm"

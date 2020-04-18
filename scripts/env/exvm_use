@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+exvm_use() {
+	if [[ "$1" == "-h" ]]; then
+		exvm_message "Usage: exvm use VERSION"
+		return 1
+	fi
+
+	if [[ "x$1" == x ]]; then
+		exvm_error "Please specify the version!"
+		return 1
+	fi
+
+	local fuzzy_match = "v1.10.2"
+	exvm_message "Now using version $fuzzy_match"
+}

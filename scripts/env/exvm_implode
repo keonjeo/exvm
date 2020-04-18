@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+. "$EXVM_ROOT/scripts/load_functions" || return 1
+
+exvm_implode() {
+	exvm_message "+---------------------------------------------------------------+"
+	exvm_message "|        You want to remove the exvm tool on the system.        |"
+	exvm_message "+---------------------------------------------------------------+"
+	echo ""
+	echo -n "Are you sure? [Y/n] "
+	read reply
+	echo ""
+
+	if [[ ! $reply =~ ^[Yy]$ ]]; then
+		exvm_message "Action cancelled"
+	else
+		exvm_reinstall_tip
+		backup_exvm_root_directory
+		remove_exvm_root_directory
+		if [[ $? == 1 ]]; then
+			exvm_dev_info "Fail to remove exvm_root directory"
+			exvm_warn "Failed to uninstall EXVM!"
+			recovery_exvm_root_directory
+		else
+			exvm_dev_info "Remove exvm_root directory successfully!"
+			exvm_message "EXVM has been removed successfully!"
+		fi
+	fi
+}
+
+exvm_reinstall_tip() {
+	exvm_dev_info "exvm_reinstall_tip"
+	[[ -s "$EXVM_ROOT/scripts/check_exvm_directory" ]] && source "$EXVM_ROOT/scripts/check_exvm_directory"
+}
+
+backup_exvm_root_directory() {
+	exvm_dev_info "backup_exvm_root_directory"
+	[[ -s $EXVM_ROOT_BACKUP ]] && rm -rf $EXVM_ROOT_BACKUP
+	cp -rp $EXVM_ROOT $EXVM_ROOT_BACKUP
+}
+
+remove_exvm_root_directory() {
+	rm -rf "$EXVM_ROOT"
+}
+
+recovery_exvm_root_directory() {
+	exvm_dev_info "recovery_exvm_root_directory"
+	[[ ! -d $EXVM_ROOT_BACKUP ]] && exvm_warn "$EXVM_ROOT_BACKUP does NOT exist on the system."
+	[[ -d $EXVM_ROOT_BACKUP ]] && cp -rp $EXVM_ROOT_BACKUP $EXVM_ROOT
+	reload_exvm
+}
+
+reload_exvm() {
+	exvm_dev_info "reload_exvm"
+	[[ -s "$EXVM_ROOT/scripts/exvm" ]] && source "$EXVM_ROOT/scripts/exvm"
+}

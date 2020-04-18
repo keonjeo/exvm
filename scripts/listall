@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+. "$EXVM_ROOT/scripts/load_functions"
+
+show_listall_usage() {
+	exvm_info "Usage: exvm listall [options]"
+	exvm_info "    -a, --all                 List all tags."
+	exvm_info "    -h, --help                Display this message."
+}
+
+read_listall_command_line() {
+
+	for i in "$@"; do
+		case $i in
+			-a|--all)
+			;;
+			-h|--help*)
+				show_listall_usage
+				exit 0
+			;;
+			*)
+				exvm_warn "Invalid option $i"
+				show_listall_usage
+				exit 65 # Bad arguments
+			;;
+		esac
+	done
+}
+
+read_listall_command_line "$@"
+
+exvm_message ""
+exvm_message ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+exvm_message ">>>                  Available Elixir Versions List                  >>>"
+exvm_message ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+exvm_message ""
+
+versions=$(git ls-remote -t https://github.com/elixir-lang/elixir.git | awk -F/ '{ print $NF }' | $SORT_PATH)
+
+if [[ $? -ne 0 ]]; then
+	exvm_error "Failed to get version list from github.com/elixir-lang repository"
+fi
+
+for version in $versions; do
+	echo "   $version"
+done | sort -V
+
+exvm_message ""
+exvm_message ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+exvm_message ">>>                                                                  >>>"
+exvm_message ">>>   use 'exvm install [version]' to install your elixir version    >>>"
+exvm_message ">>>                                                                  >>>"
+exvm_message ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+exvm_message ""
