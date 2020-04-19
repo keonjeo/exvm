@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+__update_elixir_bin_soft_link() {
+	local VERSION="$1"
+
+	if [[ "$VERSION" == "" ]]; then
+		exvm_warn "VERSION should NOT be an empty string"
+		return 1
+	fi
+
+	for directory in $ELIXIR_VERSIONS_LOCATION/*; do
+		exvm_dev_info "--------------------------"
+		exvm_dev_info "directory => $directory"
+		exvm_dev_info "--------------------------"
+		PATH="$(echo $PATH | sed -e "s,$directory/bin,,g ; s,^:,, ; s,::,:,g ; s,:$,,")"
+	done
+
+	if [[ -d $ELIXIR_ROOT/bin ]]; then
+		rm -rf $ELIXIR_ROOT/bin
+	fi
+
+	exvm_dev_info "ln -s $ELIXIR_VERSIONS_LOCATION/$VERSION/bin/ $ELIXIR_ROOT/"
+	ln -s $ELIXIR_VERSIONS_LOCATION/$VERSION/bin/ $ELIXIR_ROOT/
+
+	if [[ ! -d $EXVM_HOME/exvm_config ]] ; then
+		exvm_dev_info "
+		Counld not find $EXVM_HOME/exvm_config directory in your system.
+		exvm will create this file automatically.
+		"
+		mkdir -p $EXVM_HOME/exvm_config
+	fi
+
+	if [[ ! -f $EXVM_HOME/exvm_config/elixir_current ]] ; then
+		exvm_dev_info "
+		Counld not find $EXVM_HOME/exvm_config/elixir_current file in your system.
+		exvm will create this file automatically.
+		"
+		touch $EXVM_HOME/exvm_config/elixir_current
+	fi
+
+	echo "$VERSION" > $EXVM_HOME/exvm_config/elixir_current
+}
+
+
+# set this elixir version to be the one available in the PATH
+# @params: elixir_version, e.g. 22.3.2
+exvm_use() {
+    local VERSION=$1
+
+    if [[ -d $ELIXIR_VERSIONS_LOCATION/$VERSION ]]; then
+        __update_elixir_bin_soft_link "$VERSION"
+	else
+        exvm_warn "
+
+Elixir Version $VERSION has not been installed in $ELIXIR_VERSIONS_LOCATION/$VERSION.
+Use 'exvm install $VERSION' to install it.
+        "
+        return 1
+    fi
+}

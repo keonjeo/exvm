@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# uninstall the elixir version from system
+exvm_uninstall() {
+    local VERSION=$1
+    if [[ ! -d $ELIXIR_VERSIONS_LOCATION/$VERSION ]]; then
+        exvm_error "Elixir version $VERSION has not been installed."
+        return 1
+    fi
+
+    local default_version="$(cat $EXVM_HOME/exvm_config/elixir_default)"
+    local current_version="$(cat $EXVM_HOME/exvm_config/elixir_current)"
+
+    exvm_message "Uninstalling $VERSION..."
+    rm -rf $ELIXIR_VERSIONS_LOCATION/$VERSION
+
+    [[ "$default_version" == "$VERSION" ]] && echo "" > $EXVM_HOME/exvm_config/elixir_default
+    if [[ "$current_version" == "$VERSION" ]]; then
+        if [[ -L $ELIXIR_ROOT/bin ]]; then
+            rm -rf $ELIXIR_ROOT/bin
+        fi
+        echo "" > $EXVM_HOME/exvm_config/elixir_current
+    fi
+
+    exvm_message "Elixir version $VERSION has been uninstalled successfully"
+}

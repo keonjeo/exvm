@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# EXVM_DEV env variable for development
+# export EXVM_DEV=true
+EXVM_HOME=$HOME"/.exvm"
+ELIXIR_TARS_LOCATION="$EXVM_HOME/elixir_tars"
+ELIXIR_VERSIONS_LOCATION="$EXVM_HOME/elixir_versions"
+
+ELIXIR_GITHUB="https://github.com/elixir/otp.git"
+ELIXIR_DOWNLOAD_URL="https://github.com/elixir/otp/archive"
+
+# If you want to download the source code from gitee, you need to export ELIXIR_GITEE ENV variable
+# export ELIXIR_GITEE="https://gitee.com/mirrors/otp.git"
+ELIXIR_GITEE_DOWNLOAD_URL="https://gitee.com/mirrors/otp/repository/archive"
+
+FILE_EXTENSION="zip"
+FILE_PREFIX="OTP"

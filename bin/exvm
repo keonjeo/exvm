@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+. "$EXVM_ROOT/scripts/load_functions" || exit 1
+. "$EXVM_ROOT/scripts/load_global_variable" || exit 1
+. "$EXVM_ROOT/scripts/load_commands" || exit 1
+
+if [ -z "$EXVM_ROOT" ]; then
+    exvm_error 'ERROR: EXVM_ROOT is not set! Please add the following line to your .bashrc or .profile
+    
+        [[ -s "$HOME/.exvm/scripts/exvm" ]] && source "$HOME/.exvm/scripts/exvm"
+
+    '
+    exit 1
+fi
+
+command="$1"
+[[ $command == "" ]] && exvm_help
+[[ $command == "" ]] && exit 0
+
+check_command_if_need_to_pass_parameter() {
+    case $command in
+        version | help | list_remote) echo "false";;
+        *) echo "true";;
+    esac
+}
+
+if [[ -f "$EXVM_ROOT/scripts/commands/exvm_$command" ]] ; then
+    result=$(check_command_if_need_to_pass_parameter)
+    if [[ $result == "false" ]]; then
+        exvm_$command $@ 
+        exit $?
+    else
+        shift
+        exvm_$command $@
+        exit $?
+    fi
+else
+    exvm_fatal "Unrecognized command line argument: '$command'"
+fi

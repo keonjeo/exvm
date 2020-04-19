@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+
+unzip_elixir_version_zip_file() {
+    local ELIXIR_VERSION_ZIP_FILE=$FILE_PREFIX-$VERSION.$FILE_EXTENSION
+    cd $ELIXIR_INSTALL_DIR
+    exvm_dev_info "current path: `pwd`"
+
+    exvm_message "unzipping... $ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE"
+    exvm_dev_info "unzip -q $ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE -d $ELIXIR_INSTALL_DIR"
+    unzip -q $ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE -d $ELIXIR_INSTALL_DIR
+    cd -
+    return 0
+}
+
+configure_elixir_source_code() {
+    if [ $(ls -1 $ELIXIR_INSTALL_DIR | wc -l) -gt 1 ]; then
+        cd $ELIXIR_INSTALL_DIR
+    else
+        cd $ELIXIR_INSTALL_DIR/* # enter into the new subdirectory ( otp sub-directory )
+    fi
+
+    exvm_dev_info "current path: `pwd`"
+
+    exvm_message "Configuring... $ELIXIR_INSTALL_DIR"
+    # Start to autoconf the elixir source code, and then make it and install it.
+    chmod +X otp_build
+    ./otp_build autoconf
+    ./configure --prefix="$ELIXIR_INSTALL_DIR" --without-javac
+    cd -
+    return 0
+}
+
+do_you_want_to_continue_to_install() {
+    local cont="y"
+    local DONT_ASK="$1"
+    exvm_dev_info "DONT_ASK => $DONT_ASK"
+    [[ "$DONT_ASK" != "Y" && "$DONT_ASK" != "y" ]] && echo "" && exvm_message "Continue with installation?(y/n)" && read cont
+
+    if [[ "$cont" != "Y" && "$cont" != "y" ]]; then
+        exvm_message "Elixir v$1 installation has been Cancelled"
+        rm -rf $ELIXIR_INSTALL_DIR
+        exit 0
+    fi
+    return 0
+}
+
+complie_source_code_and_install_elixir() {
+    local ELIXIR_VERSION_ZIP_FILE=$FILE_PREFIX-$VERSION.$FILE_EXTENSION
+    if [ $(ls -1 $ELIXIR_INSTALL_DIR | wc -l) -gt 1 ]; then
+        cd $ELIXIR_INSTALL_DIR
+    else
+        cd $ELIXIR_INSTALL_DIR/* # enter into the new subdirectory ( otp sub-directory )
+    fi
+
+    exvm_dev_info "current path: `pwd`"
+
+    exvm_message "Compiling and installing $1"
+
+    export MAKEFLAGS=-j8
+    make && make install 
+    # make && make install 1> "/tmp/install_elixir_$VERSION.log" 2>&1
+
+    if [[ $? != 0 ]]; then
+        exvm_error "Fail to compile the elixir source code."
+        return 1
+    fi
+
+    [[ ! -n "$EXVM_DEV" ]] && rm -rf $ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE
+    cd -
+    return 0
+}
+
+create_lib_links_into_elixir_bin_path() {
+    cd "$ELIXIR_INSTALL_DIR/lib"
+    exvm_dev_info "current path: `pwd`"
+
+    exvm_message "Add links to path..."
+    # Escape "elixir/bin" and "elixir/erts" because that's already in the right place
+    for d in $(find . -type d -name "bin" | grep -v "elixir/bin" | grep -v "elixir/erts"); do
+        cd $d
+        for f in *; do
+            exvm_message "Adding $d/$f to $ELIXIR_INSTALL_DIR/bin..."
+            exvm_dev_info "ln -s $ELIXIR_INSTALL_DIR/lib/$d/$f $ELIXIR_INSTALL_DIR/bin"
+            ln -s $ELIXIR_INSTALL_DIR/lib/$d/$f $ELIXIR_INSTALL_DIR/bin
+        done
+        cd -
+    done
+    cd -
+    return 0
+}
+
+check_if_version_installed() {
+    # Install the version if not installed yet
+    [[ -d "$ELIXIR_VERSIONS_LOCATION/$VERSION" ]] && exvm_message "
+    Elixir v$1 - This version is already installed at $ELIXIR_VERSIONS_LOCATION
+    
+    Try to execute 'exvm uninstall $1' and then execute 'exvm install $1' again
+    " && exit 0
+}
+
+exvm_install() {
+    exvm_dev_info "\$@: $@, count: $#"
+
+    if [[ $# -eq 0 ]]; then
+        exvm_message "exvm install usage:
+
+        exvm install elixir_version
+
+        for example:  exvm install 22.3.2
+        "
+        exit 1
+    fi
+
+    local result=$(check_dependence)
+    if [[ -n "$result" ]]; then
+        exvm_fatal "$result"
+    fi
+
+    local VERSION="$1"
+    local DONT_ASK="$(echo $2 | sed 's/-//')"
+
+    exvm_download $VERSION
+
+    check_if_version_installed
+
+    ELIXIR_INSTALL_DIR="$ELIXIR_VERSIONS_LOCATION/$VERSION"
+    [[ ! -d $ELIXIR_INSTALL_DIR ]] && mkdir -p $ELIXIR_INSTALL_DIR > /dev/null 2>&1
+
+    unzip_elixir_version_zip_file
+
+    [[ -z $NOT_CONFIGURE_ELIXIR_SOURCE_CODE ]] && configure_elixir_source_code
+
+    do_you_want_to_continue_to_install $DONT_ASK
+
+    [[ -z $NOT_COMPLIE_SOURCE_CODE ]] && (complie_source_code_and_install_elixir || exvm_fatal "Fail to complie source code")
+    [[ -z $NOT_COMPLIE_SOURCE_CODE ]] && (create_lib_links_into_elixir_bin_path || exvm_fatal "Fail to create lib links")
+
+    # Just only for development for exvm project
+    if [[ -n $NOT_COMPLIE_SOURCE_CODE ]]; then
+        [[ ! -d ~/.exvm_elixir_versions.back ]] && exvm_fatal "~/.exvm_elixir_versions.back does NOT exist on your home directory."
+        [[ -d ~/.exvm/elixir_versions ]] && exvm_dev_info "trying to remove ~/.exvm/elixir_versions directory" && rm -rf ~/.exvm/elixir_versions
+        exvm_dev_info "copy ~/.exvm_elixir_versions.back directory to ~/.exvm/elixir_versions directory" && cp -rp ~/.exvm_elixir_versions.back ~/.exvm/elixir_versions
+    fi
+
+    exvm_message ""
+    exvm_message "Congratulations. Installation is Done!"
+    exvm_message "Use 'exvm default $1' to set this version as default or 'exvm use $1' to start using this version right now"
+    exvm_message ""
+}

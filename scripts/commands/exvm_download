@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# receive the version name to be downloaded. 
+exvm_download() {
+    local VERSION="$1"
+    local ELIXIR_VERSION_ZIP_FILE=$FILE_PREFIX-$VERSION.$FILE_EXTENSION
+
+    # Download version only if it does not existed cached
+    [[ -n $ELIXIR_GITEE ]] && ELIXIR_DOWNLOAD_URL=$ELIXIR_GITEE_DOWNLOAD_URL
+
+    [[ ! -d $ELIXIR_TARS_LOCATION ]] && mkdir -p $ELIXIR_TARS_LOCATION
+    [[ -f "$ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE" ]] && \
+        exvm_dev_info "$ELIXIR_VERSION_ZIP_FILE has existed in the $ELIXIR_TARS_LOCATION directory, it will be removed." && \
+        rm -rf "$ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE"
+
+    if [[ ! -f "$ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE" ]]; then
+
+        # NOT download zip file every time when you are developing exvm project
+        [[ -n $EXVM_DEV ]] && [[ -d ~/.exvm_elixir_tars.back ]] && rm -rf ~/.exvm/elixir_tars
+        [[ -n $EXVM_DEV ]] && [[ -d ~/.exvm_elixir_tars.back ]] && cp -rp ~/.exvm_elixir_tars.back ~/.exvm/elixir_tars && return 0
+
+        fetch_available_elixir_versions
+        exvm_dev_info "AVAILABLE_ELIXIR_VERSIONS => $AVAILABLE_ELIXIR_VERSIONS "
+        if [[ -z "$AVAILABLE_ELIXIR_VERSIONS" ]]; then
+            exvm_fatal "Failed to fetch available Elixir versions"
+        fi
+        
+        if [[ -z $(echo "$AVAILABLE_ELIXIR_VERSIONS" | grep "$1") ]]; then
+            exvm_fatal "Elixir v$VERSION is not available at $ELIXIR_DOWNLOAD_URL"
+        else
+            exvm_dev_info "wget --progress=bar -P $ELIXIR_TARS_LOCATION $ELIXIR_DOWNLOAD_URL/$ELIXIR_VERSION_ZIP_FILE"
+            wget --progress=bar -P $ELIXIR_TARS_LOCATION $ELIXIR_DOWNLOAD_URL/$ELIXIR_VERSION_ZIP_FILE
+        fi
+    fi
+}

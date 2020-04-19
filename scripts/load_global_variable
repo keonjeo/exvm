@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+. $EXVM_ROOT/scripts/global_variable

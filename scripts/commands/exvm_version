@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+exvm_version() {
+	exvm_message "EXVM v$EXVM_VERSION has been installed at $EXVM_ROOT"
+}

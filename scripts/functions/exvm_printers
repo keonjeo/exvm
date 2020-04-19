@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+exvm_fatal() {
+	tput sgr0
+	tput setaf 1 # Red color
+    echo "[ERROR] $1" >&2
+	tput sgr0
+	exit 1
+}
+
+exvm_error() {
+	tput sgr0
+	tput setaf 1 # Red color
+    echo "[ERROR] $1" >&2
+	tput sgr0
+}
+
+exvm_warn() {
+	tput sgr0
+	tput setaf 3 # Yellow color
+    echo "[WARN] $1" >&1
+	tput sgr0
+}
+
+exvm_info() {
+	tput sgr0
+	tput setaf 2 # Green color
+    echo "[INFO] $1" >&1
+	tput sgr0
+}
+
+exvm_dev_info() {
+	tput sgr0
+	tput setaf 2 # Green color
+    if [[ -n $EXVM_DEV ]]; then
+        echo "[INFO] $(date +'%Y-%m-%dT%H:%M:%S%z'): $@" >&1
+    else
+        echo "[INFO] $(date +'%Y-%m-%dT%H:%M:%S%z'): $@" > /dev/null
+    fi
+	tput sgr0
+}
+
+exvm_echo() {
+    tput sgr0
+	tput setaf 4 # Blue color
+    echo "$1" >&1
+	tput sgr0
+}
+
+exvm_success_echo() {
+    tput sgr0
+    tput setaf 5
+    echo "$1" >&1
+    tput sgr0
+}
+
+exvm_message() {
+    tput sgr0
+    tput setaf 2 # Green color
+    echo "$1" >&1
+    tput sgr0
+}

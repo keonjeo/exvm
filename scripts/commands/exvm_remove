@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# remove the elixir version from the exvm space
+exvm_remove() {
+    local VERSION=$1
+    local ELIXIR_VERSION_ZIP_FILE=$FILE_PREFIX-$VERSION.$FILE_EXTENSION
+
+    exvm_uninstall $VERSION
+
+    if [[ -f $ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE ]]; then
+        exvm_message "Removing $VERSION..."
+        rm -rf $ELIXIR_TARS_LOCATION/$ELIXIR_VERSION_ZIP_FILE
+        exvm_message "Removed successfully"
+    else
+        exvm_message "$VERSION not downloaded"
+        return 0
+    fi
+}

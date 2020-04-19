@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+. "$EXVM_ROOT/scripts/load_functions" || return 1
+
+exvm() {
+	if [[ "$EXVM_ROOT" == "" ]]; then
+		exvm_error "EXVM_ROOT not set. Please source \$EXVM_ROOT/scripts/exvm"
+		return 1
+	fi
+
+	if [[ -d $EXVM_ROOT/.git ]]; then
+		mv "$EXVM_ROOT/.git" "$EXVM_ROOT/git.bak"
+		if [[ $? -ne 0 ]]; then
+			exvm_error "Failed to move git info out of the way"
+			return 1
+		fi
+	fi
+
+	if [[ ! -d $EXVM_ROOT ]]; then
+		exvm_error "EXVM_ROOT does not exist, please reinstall exvm!"
+		return 1
+	fi
+
+	[[ ! -d $EXVM_ROOT/logs ]] && mkdir -p "$EXVM_ROOT/logs" > /dev/null 2>&1
+
+	$EXVM_ROOT/bin/exvm $@
+}

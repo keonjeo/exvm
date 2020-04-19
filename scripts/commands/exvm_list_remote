@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+
+fetch_available_elixir_versions() {
+
+    ELIXIR_REPOSITORY=$ELIXIR_GITHUB
+    [[ -n $ELIXIR_GITEE ]] && ELIXIR_REPOSITORY=$ELIXIR_GITEE
+
+    exvm_dev_info "ELIXIR_REPOSITORY => $ELIXIR_REPOSITORY"
+
+    AVAILABLE_ELIXIR_VERSIONS=$(git ls-remote -t $ELIXIR_REPOSITORY | awk -F/ '{ print $NF }' | awk -F"OTP_R" '{print $1}' | sort)
+
+    if [[ $? -ne 0 ]]; then
+        exvm_fatal "Failed to get version list from $ELIXIR_REPOSITORY repository"
+    fi
+}
+
+exvm_list_remote() {
+    exvm_dev_info "ELIXIR_DOWNLOAD_URL: $ELIXIR_DOWNLOAD_URL"
+
+    exvm_message ""
+    exvm_message ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    exvm_message ">>>                   Available Elixir Versions List                    >>>"
+    exvm_message ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    exvm_message ""
+
+    fetch_available_elixir_versions
+
+    for version in $AVAILABLE_ELIXIR_VERSIONS; do
+        if [[ $version != *"R16B02"* ]] && [[ $version != *"erl_"* ]] && [[ $version != *"^{}"* ]]; then
+            version=`echo $version | sed "s/OTP-//g" | sed "s/OTP_//g"`
+            echo "   $version"
+        fi
+    done | sort -V
+
+    exvm_message ""
+    exvm_message ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    exvm_message ">>>                                                                     >>>"
+    exvm_message ">>>     use 'exvm install [version]' to install your elixir version     >>>"
+    exvm_message ">>>                                                                     >>>"
+    exvm_message ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    exvm_message ""
+}

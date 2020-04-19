@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# set this elixir version as system default.
+# @params: elixir_version, e.g. 22.3.2
+exvm_default() {
+    local VERSION=$1
+
+    if [[ -d $ELIXIR_VERSIONS_LOCATION/$VERSION ]]; then
+
+        if [[ ! -d $EXVM_HOME/exvm_config ]] ; then
+            exvm_dev_info "
+            Counld not find $EXVM_HOME/exvm_config directory in your system.
+            exvm will create this file automatically.
+            "
+            mkdir -p $EXVM_HOME/exvm_config
+        fi
+
+        if [[ ! -f $EXVM_HOME/exvm_config/elixir_default ]] ; then
+            exvm_dev_info "
+            Counld not find $EXVM_HOME/exvm_config/elixir_default file in your system.
+            exvm will create this file automatically.
+            "
+            touch $EXVM_HOME/exvm_config/elixir_default
+        fi
+
+        echo "$VERSION" > $EXVM_HOME/exvm_config/elixir_default
+        exvm_dev_info "=== exvm_use $VERSION ==="
+        exvm_use $VERSION
+    else
+        exvm_error "
+        $VERSION is not installed yet.
+
+        Use 'exvm install $VERSION' to install it
+        "
+        return 1
+    fi
+}

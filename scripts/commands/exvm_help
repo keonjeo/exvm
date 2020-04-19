@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+exvm_help() {
+    exvm_echo "
+
+Usage: exvm [command]
+
+    Description:
+    EXVM is the Elixir Version Manager.
+
+    Commands:
+    version       - print the exvm version number
+    help          - display this usage text
+    list_remote   - list available versions
+    install       - install elixir version
+    uninstall     - uninstall elixir version
+    remove        - remove the whole stuff related to this version
+    list          - list installed elixir versions
+    default       - set an elixir version as system default
+    use           - select an elixir version to use
+    download      - download elixir tar file
+    system        - leaving only the system version of ELIXIR available
+    implode       - completely remove exvm
+"
+}

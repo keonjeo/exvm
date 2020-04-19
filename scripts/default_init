@@ -1,0 +1,20 @@
+[[ ! -d $EXVM_ROOT/logs ]] && mkdir -p $EXVM_ROOT/logs > /dev/null 2>&1
+
+export EXVM_VERSION=$(cat "$EXVM_ROOT/VERSION")
+export EXVM_PATH_BACKUP="$PATH"
+export PATH="$PATH:$EXVM_ROOT/bin:$ELIXIR_ROOT/bin"
+
+# exvm use elixir_default for new terminal session.
+if [[ -s $EXVM_ROOT/exvm_config/elixir_default ]]; then
+    default_version=$(cat $EXVM_ROOT/exvm_config/elixir_default)
+    if [[ -s $EXVM_ROOT/exvm_config/elixir_current ]]; then
+        current_version=$(cat $EXVM_ROOT/exvm_config/elixir_current)
+    fi
+
+    [[ "$current_version" != "" ]] && version=$current_version
+    [[ "$current_version" == "" ]] && version=$default_version
+
+    [[ -n $version ]] && exvm use $version > /dev/null
+fi
+
+. "$EXVM_ROOT/scripts/env/exvm"
